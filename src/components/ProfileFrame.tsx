@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Sparkles, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Sparkles, ShieldCheck, Upload, Camera, Trash2 } from 'lucide-react';
 
 interface ProfileFrameProps {
   displayName: string;
@@ -7,24 +7,17 @@ interface ProfileFrameProps {
   avatarUrl?: string;
   quote?: string;
   signature?: string;
-  brandSealUrl?: string;
 }
 
 export const ProfileFrame: React.FC<ProfileFrameProps> = ({
   displayName,
   professionalTitle,
-  avatarUrl = '/assets/profile/areeba-profile.jpg',
+  avatarUrl = '',
   quote = 'CODE IS MY CRAFT. IMPACT IS MY GOAL.',
   signature = 'Areeba',
-  brandSealUrl = '/assets/brand/gold-code-emblem.jpg',
 }) => {
-  // Check for uploaded or stored photo in localStorage, default to provided avatarUrl
-  const [photoUrl, setPhotoUrl] = useState<string>(() => {
-    const saved = localStorage.getItem('areeba_profile_photo');
-    if (saved && saved.startsWith('data:image')) {
-      return saved;
-    }
-    return avatarUrl || '/assets/profile/areeba-profile.jpg';
+  const [photoUrl, setPhotoUrl] = useState<string | null>(() => {
+    return localStorage.getItem('areeba_custom_profile_photo') || null;
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -42,22 +35,29 @@ export const ProfileFrame: React.FC<ProfileFrameProps> = ({
     setIsHovered(false);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         const result = event.target?.result as string;
         setPhotoUrl(result);
-        localStorage.setItem('areeba_profile_photo', result);
+        localStorage.setItem('areeba_custom_profile_photo', result);
+        window.dispatchEvent(new Event('storage'));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleResetToOriginal = () => {
-    localStorage.removeItem('areeba_profile_photo');
-    setPhotoUrl('/assets/profile/areeba-profile.jpg');
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    localStorage.removeItem('areeba_custom_profile_photo');
+    setPhotoUrl(null);
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -72,6 +72,15 @@ export const ProfileFrame: React.FC<ProfileFrameProps> = ({
       {/* Outer Studio Atmospheric Smoke & Warm Golden Haze */}
       <div className="absolute -inset-8 bg-gradient-to-tr from-amber-500/10 via-cyan-500/10 to-amber-700/15 rounded-3xl blur-3xl opacity-75 pointer-events-none" />
       <div className="absolute -top-12 -right-8 w-48 h-48 bg-[#D4AF37]/15 rounded-full blur-[90px] pointer-events-none" />
+
+      {/* Hidden File Picker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       {/* Main 3D Tilting Studio Container */}
       <div
@@ -90,16 +99,58 @@ export const ProfileFrame: React.FC<ProfileFrameProps> = ({
 
           {/* Main Portrait Canvas - Aspect Square for Exact 1:1 Photo Render */}
           <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#07080c] flex items-center justify-center border border-[rgba(212,175,55,0.2)]">
-            {/* Real Exact Portrait of Areeba Munir */}
-            <img
-              src={photoUrl}
-              alt={`Areeba Munir - ${professionalTitle}`}
-              className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
-              referrerPolicy="no-referrer"
-            />
+            {photoUrl ? (
+              <>
+                {/* Real Exact Portrait of Areeba Munir */}
+                <img
+                  src={photoUrl}
+                  alt={`Areeba Munir - ${professionalTitle}`}
+                  className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
+                  referrerPolicy="no-referrer"
+                />
+
+                {/* Corner controls: Change or Remove photo */}
+                <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={triggerUpload}
+                    title="Change / Update Photo"
+                    className="p-2 rounded-full bg-slate-950/85 hover:bg-[#1a1c24] border border-[rgba(212,175,55,0.4)] text-[#F5D38A] hover:text-white transition-all shadow-md"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={handleRemovePhoto}
+                    title="Remove Photo"
+                    className="p-2 rounded-full bg-slate-950/85 hover:bg-rose-950/80 border border-rose-500/40 text-rose-300 hover:text-white transition-all shadow-md"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* If photo is not uploaded yet, show sleek 1-click upload card */
+              <div
+                onClick={triggerUpload}
+                className="w-full h-full flex flex-col items-center justify-center p-6 text-center cursor-pointer bg-gradient-to-b from-[#13151f] to-[#07080c] hover:from-[#191b29] hover:to-[#0b0d14] transition-all group/upload"
+              >
+                <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-[rgba(212,175,55,0.5)] flex items-center justify-center mb-4 group-hover/upload:border-amber-300 group-hover/upload:scale-105 transition-all bg-black/40 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                  <Upload className="w-8 h-8 text-[#F5D38A] group-hover/upload:text-white transition-colors" />
+                </div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1.5 font-mono">
+                  Set Your Original Photo
+                </h3>
+                <p className="text-xs text-slate-300 font-sans max-w-[220px] mb-4 leading-relaxed">
+                  Click here to select your real photo directly from your device
+                </p>
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase text-[#050508] bg-gradient-to-r from-[#FFF6E5] via-[#F5D38A] to-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] group-hover/upload:scale-105 transition-transform">
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Choose Photo</span>
+                </span>
+              </div>
+            )}
 
             {/* Top Status Tag */}
-            <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-[rgba(212,175,55,0.35)] shadow-lg">
+            <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-[rgba(212,175,55,0.35)] shadow-lg pointer-events-none">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
@@ -107,34 +158,6 @@ export const ProfileFrame: React.FC<ProfileFrameProps> = ({
               <span className="text-[10px] font-mono tracking-widest text-[#F5D38A] uppercase font-semibold">
                 SE · UCP LAHORE
               </span>
-            </div>
-
-            {/* Camera / Photo Upload Controls */}
-            <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
-              {localStorage.getItem('areeba_profile_photo') && (
-                <button
-                  onClick={handleResetToOriginal}
-                  title="Reset to Original Photo"
-                  className="p-2 rounded-full bg-slate-950/85 hover:bg-[#1a1c24] border border-[rgba(212,175,55,0.4)] text-[#F5D38A] hover:text-white transition-all shadow-md"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              )}
-              <label
-                htmlFor="profile-image-upload"
-                title="Update profile picture"
-                className="cursor-pointer p-2 rounded-full bg-slate-950/85 hover:bg-[#1a1c24] border border-[rgba(212,175,55,0.4)] text-[#F5D38A] hover:text-white transition-all shadow-md"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <input
-                  ref={fileInputRef}
-                  id="profile-image-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                />
-              </label>
             </div>
           </div>
 
@@ -151,24 +174,6 @@ export const ProfileFrame: React.FC<ProfileFrameProps> = ({
                 {signature}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Floating Glowing Metallic Bronze-Gold Code Seal Emblem */}
-        <div
-          id="hero-gold-code-emblem"
-          className="absolute -bottom-5 -right-4 sm:-right-6 w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-tr from-[#664b15] via-[#D4AF37] to-[#FFF6E5] shadow-gold-emblem flex items-center justify-center animate-float z-30"
-          title="Engineered with Code & Purpose"
-        >
-          <div className="relative w-full h-full rounded-full overflow-hidden bg-black flex items-center justify-center">
-            <img
-              src={brandSealUrl}
-              alt="Code Seal Emblem"
-              className="w-full h-full object-cover filter brightness-110"
-              referrerPolicy="no-referrer"
-            />
-            {/* Subtle overlay shimmer */}
-            <div className="absolute inset-0 bg-radial from-transparent via-amber-500/10 to-transparent pointer-events-none" />
           </div>
         </div>
 

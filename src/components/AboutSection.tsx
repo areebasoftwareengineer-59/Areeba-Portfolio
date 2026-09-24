@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GraduationCap, Award, Laptop, Sparkles, BookOpen, CheckCircle2, ArrowUpRight, Cpu } from 'lucide-react';
 import { PERSONAL_INFO } from '../data/portfolioData';
 
 export const AboutSection: React.FC = () => {
+  const [customPhoto, setCustomPhoto] = useState<string | null>(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('areeba_custom_profile_photo') : null;
+  });
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setCustomPhoto(localStorage.getItem('areeba_custom_profile_photo'));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
   return (
     <section
       id="about"
@@ -34,13 +45,19 @@ export const AboutSection: React.FC = () => {
           <div>
             {/* Supporting Personal Branding Quote with Profile Portrait */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 sm:p-5 rounded-2xl bg-[#090b12]/80 border border-[rgba(212,175,55,0.35)] text-slate-200 text-sm font-mono leading-relaxed mb-6 shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-[rgba(212,175,55,0.5)] shadow-[0_0_20px_rgba(212,175,55,0.25)] shrink-0 group">
-                <img
-                  src={PERSONAL_INFO.avatarUrl}
-                  alt={PERSONAL_INFO.name}
-                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-[rgba(212,175,55,0.5)] shadow-[0_0_20px_rgba(212,175,55,0.25)] shrink-0 group bg-[#07080c] flex items-center justify-center">
+                {customPhoto ? (
+                  <img
+                    src={customPhoto}
+                    alt={PERSONAL_INFO.name}
+                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="text-xl font-bold font-mono text-[#F5D38A]">
+                    {PERSONAL_INFO.monogram}
+                  </span>
+                )}
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-3xl text-[#D4AF37] leading-none font-serif">“</span>

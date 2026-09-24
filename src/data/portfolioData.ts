@@ -3,14 +3,14 @@ import { Project, SkillCategory, TimelineItem, AcademicAchievement } from '../ty
 export const PERSONAL_INFO = {
   name: "Areeba Munir",
   displayName: "Areeba",
-  monogram: "AC",
+  monogram: "AM",
   professionalTitle: "Aspiring Software Engineer",
   secondaryTitle: "Software Engineering Student",
   location: "Lahore, Pakistan",
   tagline: "Building • Learning • Creating",
   statusLabel: "AVAILABLE FOR INTERNSHIP OPPORTUNITIES",
   heroHeading: "Hi, I'm Areeba",
-  avatarUrl: "/assets/profile/areeba-profile.jpg",
+  avatarUrl: "",
   heroDescription:
     "I'm a Software Engineering student passionate about software development, web development, UI/UX design, databases, and creating practical digital experiences.",
   supportingText:
